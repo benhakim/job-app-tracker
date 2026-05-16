@@ -57,7 +57,7 @@ export default function CreateJobApplicationDialog({
     }
    return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogTrigger>
+        <DialogTrigger asChild>
             <Button variant="outline"
             className="w-full mb-4 justify-start text-muted-foregrounds">
                 <Plus className="mr-2 h-4 w-4" />

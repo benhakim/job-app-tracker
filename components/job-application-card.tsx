@@ -9,15 +9,17 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
-import { useState } from "react";
+import React, { useState } from "react";
 import column from "@/lib/models/column";
 
 
 interface JobApplicationProps {
     job: JobApplication;
     columns: Column[];
+    dragHandleProps?: React.HTMLAttributes<HTMLDivElement>;
 }
-export default function JobApplicationCard({job, columns}: JobApplicationProps) {
+export default function JobApplicationCard({job,
+     columns, dragHandleProps}: JobApplicationProps) {
     const [isEditing, setIsEditing] = useState<boolean>(false);
     const [formData, setFormData] = useState({
         company: job.company,
@@ -75,7 +77,7 @@ export default function JobApplicationCard({job, columns}: JobApplicationProps) 
     return (
         <>
         <Card className="cursor-pointer transition-shadow hover:shadow-lg
-        bg-white group shadow-sm">
+        bg-white group shadow-sm" {...dragHandleProps}>
             <CardContent className="p-4">
                 <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">

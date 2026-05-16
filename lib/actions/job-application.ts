@@ -138,7 +138,7 @@ export async function updateJobApplication(
      const jobsThatNeedToShift = jobsInTargetColumn.slice(order);   
      for (const job of jobsThatNeedToShift) {
         await JobApplication.findByIdAndUpdate(job._id, {
-            $set: { order: job},
+            $set: { order: (job.order || 0) + 100 },
         });
      }
    } else {
@@ -153,7 +153,7 @@ export async function updateJobApplication(
     updatesToApply.columnId = newColumnId;
     updatesToApply.order = newOrderValue;
    
-   await JobApplication.findByIdAndUpdate(newColumnId, {
+   await Column.findByIdAndUpdate(newColumnId, {
     $push: { jobApplications: id },
     });
 } else if (order !== undefined && order !== null) {
@@ -211,4 +211,39 @@ return { data: JSON.parse(JSON.stringify(updated)) };
     await JobApplication.deleteOne({ _id: id });
     revalidatePath("/dashboard");
     return { data: "Job application deleted" };
+}
+
+export async function deleteColumn(columnId: string, boardId: string) {
+    const session = await getSession();
+    if (!session?.user) {
+        return { error: "Unauthorized" };
+    }
+    
+    await dbConnect();
+    
+    // Verify board ownership
+    const board = await Board.findOne({ _id: boardId, userId: session.user.id });
+    if (!board) {
+        return { error: "Board not found" };
+    }
+    
+    // Verify column belongs to board
+    const column = await Column.findOne({ _id: columnId, boardId: boardId });
+    if (!column) {
+        return { error: "Column not found" };
+    }
+    
+    // Delete all job applications in the column
+    await JobApplication.deleteMany({ columnId: columnId });
+    
+    // Delete the column
+    await Column.deleteOne({ _id: columnId });
+    
+    // Remove column from board
+    await Board.findByIdAndUpdate(boardId, {
+        $pull: { columns: columnId },
+    });
+    
+    revalidatePath("/dashboard");
+    return { data: "Column deleted successfully" };
 }
